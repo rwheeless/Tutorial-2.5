@@ -9,23 +9,28 @@ public class PlayerScript : MonoBehaviour
 
     public float speed;
 
-    public Text score;
+    public Text countText;
 
-    private int scoreValue = 0;
+    private int count;
+    private int lives;
+    public Text winText;
+    public Text loseText;
+    public Text livesText;
+    public AudioClip musicClipOne;
+
+    public AudioClip musicClipTwo;
+
+    public AudioSource musicSource;
+
 
     // Start is called before the first frame update
     void Start()
     {
         rd2d = GetComponent<Rigidbody2D>();
-        score.text = scoreValue.ToString();
-    }
-
-    void Update()
-    {
-        if (Input.GetKey("escape"))
-        {
-            Application.Quit();
-        }
+        count = 0;
+        SetCountText ();
+        lives = 3;
+        SetLivesText ();
     }
 
     // Update is called once per frame
@@ -35,17 +40,64 @@ public class PlayerScript : MonoBehaviour
         float vertMovement = Input.GetAxis("Vertical");
         
         rd2d.AddForce(new Vector2(hozMovement * speed, vertMovement * speed));
+
+        if (Input.GetKey("escape"))
+        {
+            Application.Quit();
+        }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    void OnCollisionEnter2D(Collision2D collision)
     {
-       if (collision.collider.tag == "Coin")
+       if(collision.collider.tag == "Coin")
         {
-            scoreValue += 1;
-            score.text = scoreValue.ToString();
+            count = count + 1;
             Destroy(collision.collider.gameObject);
+            SetCountText ();
         }
 
+        if(collision.collider.tag == "Enemy")
+        {
+            lives = lives - 1;
+            Destroy(collision.collider.gameObject);
+            SetLivesText ();
+        }
+
+    }
+    void SetCountText ()
+    {
+        countText.text = "Score: " + count.ToString ();
+
+        if (count == 4)
+        {
+            gameObject.transform.position = new Vector2(82,0);
+        }
+
+        if (count == 9)
+        {
+            winText.text = "You Win! Made by Regan Wheeless.";
+            Destroy(gameObject);
+            {
+                    musicSource.clip = musicClipOne;
+                    musicSource.Stop();
+
+                    musicSource.clip = musicClipTwo;
+                    musicSource.Play();
+
+                }
+        }
+        
+    }
+
+    void SetLivesText ()
+    {
+        livesText.text = "Lives: " + lives.ToString ();
+
+        if (lives <= 0)
+        {
+            loseText.text = "You Lose!";
+            Destroy(gameObject);
+        }
     }
 
     private void OnCollisionStay2D(Collision2D collision)
